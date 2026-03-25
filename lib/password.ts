@@ -6,6 +6,17 @@ import {
 } from "node:crypto";
 import { promisify } from "node:util";
 
+const encodeB64 = (buf: Buffer) => {
+  return buf.toString("base64").replace(/=/g, "");
+};
+
+const decodeB64 = (b64: string): Buffer => {
+  return Buffer.from(
+    b64.padEnd(b64.length + ((4 - (b64.length % 4)) % 4), "="),
+    "base64",
+  );
+};
+
 const argon2Async = promisify(argon2);
 
 export const argon2idHash = async (password: string) => {
@@ -24,8 +35,8 @@ export const argon2idHash = async (password: string) => {
     passes: iterations,
   });
 
-  const nonceB64 = nonce.toString("base64").replace(/=/g, "");
-  const hashB64 = hash.toString("base64").replace(/=/g, "");
+  const nonceB64 = encodeB64(nonce);
+  const hashB64 = encodeB64(hash);
 
   return `$${variant}$v=19$m=${memorySize},t=${iterations},p=${parallelism}$${nonceB64}$${hashB64}`;
 };
@@ -48,11 +59,8 @@ export const argon2idVerify = async (data: {
     {} as Record<string, number>,
   );
 
-  const pad = (b64: string) =>
-    b64.padEnd(b64.length + ((4 - (b64.length % 4)) % 4), "=");
-
-  const nonce = Buffer.from(pad(parts[4]), "base64");
-  const originalHash = Buffer.from(pad(parts[5]), "base64");
+  const nonce = decodeB64(parts[4]);
+  const originalHash = decodeB64(parts[5]);
 
   try {
     const newHash = await argon2Async(variant, {
