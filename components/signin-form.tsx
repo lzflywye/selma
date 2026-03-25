@@ -13,6 +13,7 @@ import {
 } from "./ui/card";
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
+import { redirect } from "next/navigation";
 
 export const SignInForm = (): JSX.Element => {
   const [email, setEmail] = useState("");
@@ -21,11 +22,20 @@ export const SignInForm = (): JSX.Element => {
 
   const handleSignIn = async () => {
     setLoading(true);
-    await authClient.signIn.email({
-      email,
-      password,
-      callbackURL: "/dashboard",
-    });
+    await authClient.signIn.email(
+      {
+        email,
+        password,
+      },
+      {
+        onSuccess: () => {
+          redirect("/profile");
+        },
+        onError: (ctx) => {
+          alert(ctx.error.message);
+        },
+      },
+    );
     setLoading(false);
   };
 

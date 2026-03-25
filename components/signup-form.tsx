@@ -2,6 +2,7 @@
 
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useState, type JSX } from "react";
 import { Button } from "./ui/button";
 import {
@@ -22,12 +23,22 @@ export const SignUpForm = (): JSX.Element => {
 
   const handleSignUp = async () => {
     setLoading(true);
-    await authClient.signUp.email({
-      email,
-      password,
-      name,
-      callbackURL: "/dashboard",
-    });
+    await authClient.signUp.email(
+      {
+        email,
+        password,
+        name,
+        callbackURL: "/profile",
+      },
+      {
+        onSuccess: () => {
+          redirect("/profile");
+        },
+        onError: (ctx) => {
+          alert(ctx.error.message);
+        },
+      },
+    );
     setLoading(false);
   };
 
@@ -60,10 +71,9 @@ export const SignUpForm = (): JSX.Element => {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="username">Username*</FieldLabel>
+            <FieldLabel htmlFor="name">Name*</FieldLabel>
             <Input
-              id="username"
-              autoComplete="username"
+              id="name"
               required
               onChange={(e) => setName(e.target.value)}
             />
