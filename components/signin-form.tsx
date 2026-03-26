@@ -1,8 +1,14 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2Icon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type JSX } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -11,31 +17,44 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Field, FieldGroup, FieldLabel } from "./ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
-import { redirect } from "next/navigation";
+
+const formSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(12, "Please enter a password of 12 characters or more."),
+});
 
 export const SignInForm = (): JSX.Element => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async () => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
+
     await authClient.signIn.email(
-      {
-        email,
-        password,
-      },
+      { email: values.email, password: values.password },
       {
         onSuccess: () => {
-          redirect("/profile");
+          toast.success("I signed in");
+          router.push("/profile");
         },
         onError: (ctx) => {
-          alert(ctx.error.message);
+          toast.error(ctx.error.message || "Sign in failed");
         },
       },
     );
+
     setLoading(false);
   };
 
@@ -45,38 +64,64 @@ export const SignInForm = (): JSX.Element => {
         <CardTitle className="text-2xl font-bold">Sign in to Selma</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              onChange={(e) => setEmail(e.target.value)}
+        <form
+          id="signin-form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          <FieldGroup>
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="signin-form-email">Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id="signin-form-email"
+                    aria-invalid={fieldState.invalid}
+                    type="email"
+                    autoComplete="email"
+                    required
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input
-              id="password"
-              type="password"
-              min={8}
-              autoComplete="current-password"
-              required
-              onChange={(e) => setPassword(e.target.value)}
+            <Controller
+              name="password"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="signin-form-password">
+                    Password
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="signin-form-password"
+                    aria-invalid={fieldState.invalid}
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
-          </Field>
-          <Field>
-            <Button
-              className="w-full"
-              disabled={loading}
-              onClick={handleSignIn}
-            >
-              Sign in
-            </Button>
-          </Field>
-        </FieldGroup>
+            <Field>
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading && (
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Sign in
+              </Button>
+            </Field>
+          </FieldGroup>
+        </form>
       </CardContent>
       <CardFooter>
         <div className="text-sm text-muted-foreground">
