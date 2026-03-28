@@ -15,5 +15,8 @@ export const auth = betterAuth({
       verify: argon2idVerify,
     },
   },
+  rateLimit: {
+    storage: "database",
+  },
   plugins: [nextCookies()],
 });

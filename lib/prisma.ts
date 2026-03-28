@@ -4,5 +4,5 @@ import "dotenv/config";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 
-const adapter = new PrismaPg({ connectionString, max: 4 });
+const adapter = new PrismaPg({ connectionString });
 export const prisma = new PrismaClient({ adapter });
