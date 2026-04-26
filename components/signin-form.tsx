@@ -124,7 +124,7 @@ export const SignInForm = (): JSX.Element => {
         </form>
       </CardContent>
       <CardFooter>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           New to Selma?{" "}
           <Link
             href="/signup"
