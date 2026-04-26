@@ -146,7 +146,7 @@ export const SignUpForm = (): JSX.Element => {
         </form>
       </CardContent>
       <CardFooter>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           Already have an account?{" "}
           <Link
             href="/signin"
