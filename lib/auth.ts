@@ -1,22 +1,33 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { prismaAdapter } from "@better-auth/prisma-adapter";
+import { betterAuth } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
-import { argon2idHash, argon2idVerify } from "./password";
+import { genericOAuth, keycloak } from "better-auth/plugins";
+import { keycloakEnv } from "./env";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  emailAndPassword: {
-    enabled: true,
-    password: {
-      hash: argon2idHash,
-      verify: argon2idVerify,
-    },
-  },
   rateLimit: {
     storage: "database",
   },
-  plugins: [nextCookies()],
+  session: {
+    disableSessionRefresh: true,
+  },
+  plugins: [
+    genericOAuth({
+      config: [
+        keycloak({
+          clientId: keycloakEnv.KEYCLOAK_CLIENT_ID,
+          clientSecret: keycloakEnv.KEYCLOAK_CLIENT_SECRET,
+          issuer: keycloakEnv.KEYCLOAK_ISSUER,
+          scopes: ["openid", "profile", "email"],
+          pkce: true,
+          overrideUserInfo: true,
+        }),
+      ],
+    }),
+    nextCookies(),
+  ],
 });
