@@ -1,13 +1,18 @@
-import { prismaAdapter } from "@better-auth/prisma-adapter";
-import { betterAuth } from "better-auth/minimal";
+import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { genericOAuth, keycloak } from "better-auth/plugins";
-import { keycloakEnv } from "./env";
-import { prisma } from "./prisma";
+import { dbEnv, keycloakEnv } from "./env";
+import { Pool } from "pg";
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
+  database: new Pool({
+    user: dbEnv.PGUSER,
+    password: dbEnv.PGPASSWORD,
+    host: dbEnv.PGHOST,
+    port: dbEnv.PGPORT,
+    database: dbEnv.PGDATABASE,
+    options: dbEnv.PGOPTIONS,
+    max: 3,
   }),
   rateLimit: {
     storage: "database",
