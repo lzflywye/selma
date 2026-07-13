@@ -7,11 +7,12 @@ const commonSchema = z.object({
 });
 
 const dbSchema = z.object({
-  PGUSER: z.string(),
+  PGUSER: z.string().default("postgres"),
   PGPASSWORD: z.string(),
-  PGHOST: z.string(),
+  PGHOST: z.string().default("localhost"),
   PGPORT: z.coerce.number().int().default(5432),
-  PGDATABASE: z.string(),
+  PGDATABASE: z.string().default("postgres"),
+  PGOPTIONS: z.string().default(""),
 });
 
 const keycloakSchema = z.object({
@@ -35,5 +36,3 @@ function validateEnv<T>(schema: z.Schema<T>, data: unknown, name: string): T {
 export const dbEnv = validateEnv(dbSchema, process.env, "Database");
 export const nodeEnv = validateEnv(commonSchema, process.env, "Common");
 export const keycloakEnv = validateEnv(keycloakSchema, process.env, "Keycloak");
-
-export const connectionString = `postgresql://${dbEnv.PGUSER}:${encodeURIComponent(dbEnv.PGPASSWORD)}@${dbEnv.PGHOST}:${dbEnv.PGPORT}/${dbEnv.PGDATABASE}?schema=public`;

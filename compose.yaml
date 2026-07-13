@@ -1,6 +1,6 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:26.6.1
+    image: quay.io/keycloak/keycloak:26.7.0
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
@@ -8,7 +8,7 @@ services:
       - "8080:8080"
     command: start-dev
   postgres:
-    image: postgres:18.3
+    image: postgres:18.4
     environment:
       POSTGRES_PASSWORD: ${PGPASSWORD}
     volumes:
