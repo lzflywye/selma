@@ -12,7 +12,7 @@ const dbSchema = z.object({
   PGHOST: z.string().default("localhost"),
   PGPORT: z.coerce.number().int().default(5432),
   PGDATABASE: z.string().default("postgres"),
-  PGOPTIONS: z.string().default(""),
+  PGOPTIONS: z.string().default("-c search_path=auth"),
 });
 
 const keycloakSchema = z.object({
